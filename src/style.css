@@ -37,6 +37,7 @@ h1 {
 
 canvas {
   outline: black 3px solid;
+  filter: drop-shadow(0px 0px 40px #ffffff);
 }
 
 #app {
