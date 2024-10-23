@@ -2,6 +2,7 @@ import "./style.css";
 
 const APP_NAME = "My Spooky Sketchpad!";
 const app = document.querySelector<HTMLDivElement>("#app")!;
+const sketchpad = document.querySelector<HTMLCanvasElement>("#sketchpad")!;
 const pair = document.querySelector<HTMLDivElement>("#pair")!;
 
 const title = document.createElement("h1");
@@ -18,20 +19,32 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 const clearButton = document.createElement("button");
 clearButton.innerHTML = "clear";
-app.append(clearButton);
 
 clearButton.addEventListener("click", () => {
     lines.splice(0, lines.length);
     redraw();
 });
 
-pair.append(canvas, clearButton);
+const undoButton = document.createElement("button");
+undoButton.innerHTML = "undo";
+
+const redoButton = document.createElement("button");
+redoButton.innerHTML = "redo";
+
+sketchpad.append(canvas);
+sketchpad.style.position = "absolute";
+sketchpad.style.top = "-10%";
+sketchpad.style.left = "50%";
+sketchpad.style.transform = "translate(-50%, 50%)";
+
+pair.append(clearButton, undoButton, redoButton);
 pair.style.position = "absolute";
-pair.style.top = "-10%";
-pair.style.left = "52.5%";
+pair.style.top = "35%";
+pair.style.left = "50%";
 pair.style.transform = "translate(-50%, 50%)";
 
 const lines: { x: number; y: number }[][] = [];
+const redoLines: { x: number; y: number }[][] = [];
 
 let currentLine: Array<{ x: number; y: number }> | null = null;
 
@@ -61,6 +74,9 @@ canvas.addEventListener("mousemove", (e) => {
         currentLine.push({ x: cursor.x, y: cursor.y });
         canvas.dispatchEvent(event);
     }
+    if (redoLines) {
+        redoLines.splice(0, redoLines.length);
+    }
 });
 
 canvas.addEventListener("mouseup", () => {
@@ -81,3 +97,17 @@ function redraw() {
         ctx.stroke();
     }
 }
+
+undoButton.addEventListener("click", () => {
+    if (lines.length > 0) {
+        redoLines.push(lines.pop()!);
+        canvas.dispatchEvent(event);
+    }
+});
+
+redoButton.addEventListener("click", () => {
+    if (redoLines.length > 0) {
+        lines.push(redoLines.pop()!);
+        canvas.dispatchEvent(event);
+    }
+});
