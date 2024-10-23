@@ -73,9 +73,10 @@ canvas.addEventListener("mousemove", (e) => {
         cursor.y = e.offsetY;
         currentLine.push({ x: cursor.x, y: cursor.y });
         canvas.dispatchEvent(event);
-    }
-    if (redoLines) {
-        redoLines.splice(0, redoLines.length);
+
+        if (redoLines) {
+            redoLines.splice(0, redoLines.length);
+        }
     }
 });
 
