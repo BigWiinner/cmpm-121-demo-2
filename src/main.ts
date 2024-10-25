@@ -43,10 +43,28 @@ pair.style.top = "35%";
 pair.style.left = "50%";
 pair.style.transform = "translate(-50%, 50%)";
 
-const lines: { x: number; y: number }[][] = [];
-const redoLines: { x: number; y: number }[][] = [];
+// interface Displayable and createLine were given by Brace
+// when asked what the prompt in step 5 of D2 meant
+interface Displayable {
+    display(context: CanvasRenderingContext2D): void;
+}
 
-let currentLine: Array<{ x: number; y: number }> | null = null;
+type Point = { x: number; y: number };
+
+const createLine = (points: Point[]): Displayable => ({
+    display: (context: CanvasRenderingContext2D) => {
+        context.beginPath();
+        const { x, y } = points[0];
+        context.moveTo(x, y);
+        for (const { x, y } of points) {
+            context.lineTo(x, y);
+        }
+        context.stroke();
+    },
+});
+
+const lines: Displayable[] = [];
+const redoLines: Displayable[] = [];
 
 const cursor = { active: false, x: 0, y: 0 };
 
@@ -56,22 +74,17 @@ canvas.addEventListener("drawing-changed", () => {
     redraw();
 });
 
+let currentLine: { x: number; y: number }[] | null = null;
 canvas.addEventListener("mousedown", (e) => {
     cursor.active = true;
-    cursor.x = e.offsetX;
-    cursor.y = e.offsetY;
-
-    currentLine = [];
-    lines.push(currentLine);
-    currentLine.push({ x: cursor.x, y: cursor.y });
+    currentLine = [{ x: e.offsetX, y: e.offsetY }];
+    lines.push(createLine(currentLine));
     canvas.dispatchEvent(event);
 });
 
 canvas.addEventListener("mousemove", (e) => {
     if (cursor.active && currentLine) {
-        cursor.x = e.offsetX;
-        cursor.y = e.offsetY;
-        currentLine.push({ x: cursor.x, y: cursor.y });
+        currentLine.push({ x: e.offsetX, y: e.offsetY });
         canvas.dispatchEvent(event);
 
         if (redoLines) {
@@ -89,13 +102,7 @@ canvas.addEventListener("mouseup", () => {
 function redraw() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     for (const line of lines) {
-        ctx.beginPath();
-        const { x, y } = line[0];
-        ctx.moveTo(x, y);
-        for (const { x, y } of line) {
-            ctx.lineTo(x, y);
-        }
-        ctx.stroke();
+        line.display(ctx);
     }
 }
 
