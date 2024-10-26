@@ -81,6 +81,17 @@ const createLine = (points: Point[]): Displayable => ({
   },
 });
 
+const createPointer = (points: Point[]): Displayable => ({
+  display: (context: CanvasRenderingContext2D) => {
+    const { x, y, width } = points[0];
+    canvas.style.cursor = "none";
+    console.log(width);
+    context.font = 31 + 1.5 * width + "px monospace";
+    context.fillStyle = "black";
+    context.fillText("*", x - 8 - width / 2, y + 16 + width);
+  },
+});
+
 const lines: Displayable[] = [];
 const redoLines: Displayable[] = [];
 
@@ -88,12 +99,32 @@ const cursor = { active: false, x: 0, y: 0 };
 
 const event = new Event("drawing-changed");
 
-canvas.addEventListener("drawing-changed", () => {
-  redraw();
-});
+canvas.addEventListener("drawing-changed", redraw);
+
+const toolEvent = new Event("tool-moved");
+
+canvas.addEventListener("tool-moved", redraw);
 
 let currentLine: { x: number; y: number; width: number }[] | null = null;
+
+let cursorCommand: Displayable | null = null;
+let currentPointer: { x: number; y: number; width: number }[] | null = null;
+
+canvas.addEventListener("mouseenter", (e) => {
+  currentPointer = [{ x: e.offsetX, y: e.offsetY, width: ctx.lineWidth }];
+  cursorCommand = createPointer(currentPointer);
+  canvas.dispatchEvent(toolEvent);
+});
+
+canvas.addEventListener("mouseout", () => {
+  currentPointer = null;
+  cursorCommand = null;
+  canvas.dispatchEvent(event);
+});
+
 canvas.addEventListener("mousedown", (e) => {
+  currentPointer = null;
+  cursorCommand = null;
   cursor.active = true;
   currentLine = [{ x: e.offsetX, y: e.offsetY, width: ctx.lineWidth }];
   lines.push(createLine(currentLine));
@@ -101,7 +132,12 @@ canvas.addEventListener("mousedown", (e) => {
 });
 
 canvas.addEventListener("mousemove", (e) => {
+  currentPointer = [{ x: e.offsetX, y: e.offsetY, width: ctx.lineWidth }];
+  cursorCommand = createPointer(currentPointer);
+  canvas.dispatchEvent(toolEvent);
   if (cursor.active && currentLine) {
+    currentPointer = null;
+    cursorCommand = null;
     currentLine.push({ x: e.offsetX, y: e.offsetY, width: ctx.lineWidth });
     canvas.dispatchEvent(event);
 
@@ -109,19 +145,29 @@ canvas.addEventListener("mousemove", (e) => {
       redoLines.splice(0, redoLines.length);
     }
   }
+  canvas.dispatchEvent(event);
 });
 
-canvas.addEventListener("mouseup", () => {
+canvas.addEventListener("mouseup", (e) => {
+  currentPointer = [{ x: e.offsetX, y: e.offsetY, width: ctx.lineWidth }];
+  cursorCommand = createPointer(currentPointer);
   cursor.active = false;
   currentLine = null;
+  canvas.dispatchEvent(toolEvent);
   canvas.dispatchEvent(event);
 });
 
 function redraw() {
+  ctx.fillStyle = "orange";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const temp: number = ctx.lineWidth;
+  if (cursorCommand) {
+    cursorCommand.display(ctx);
+  }
   for (const line of lines) {
     line.display(ctx);
   }
+  ctx.lineWidth = temp;
 }
 
 undoButton.addEventListener("click", () => {
