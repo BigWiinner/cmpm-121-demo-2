@@ -27,6 +27,11 @@ clearButton.innerHTML = "clear";
 
 clearButton.addEventListener("click", () => {
   lines.splice(0, lines.length);
+  placedIcons.splice(0, placedIcons.length);
+  redoLines.splice(0, redoLines.length);
+  redoIcons.splice(0, redoIcons.length);
+  undoOrder.splice(0, undoOrder.length);
+  redoOrder.splice(0, redoOrder.length);
   redraw();
 });
 
@@ -42,13 +47,28 @@ thinButton.innerHTML = "thin lines";
 const thickButton = document.createElement("button");
 thickButton.innerHTML = "thick lines";
 
-sketchpad.append(canvas, thinButton, thickButton);
+const pumpkinSticker = document.createElement("button");
+pumpkinSticker.innerHTML = "🎃";
+
+const skullSticker = document.createElement("button");
+skullSticker.innerHTML = "💀";
+
+const ghostSticker = document.createElement("button");
+ghostSticker.innerHTML = "👻";
+
+sketchpad.append(canvas);
 sketchpad.style.position = "absolute";
 sketchpad.style.top = "10%";
 sketchpad.style.left = "50%";
 sketchpad.style.transform = "translate(-50%, 50%)";
 
-thick.append(thinButton, thickButton);
+thick.append(
+  thinButton,
+  thickButton,
+  pumpkinSticker,
+  skullSticker,
+  ghostSticker,
+);
 thick.style.position = "absolute";
 thick.style.top = "55%";
 thick.style.left = "50%";
@@ -67,6 +87,7 @@ interface Displayable {
 }
 
 type Point = { x: number; y: number; width: number };
+type Icon = { x: number; y: number; emoji: string };
 
 const createLine = (points: Point[]): Displayable => ({
   display: (context: CanvasRenderingContext2D) => {
@@ -81,19 +102,23 @@ const createLine = (points: Point[]): Displayable => ({
   },
 });
 
+let icon = "*";
 const createPointer = (points: Point[]): Displayable => ({
   display: (context: CanvasRenderingContext2D) => {
     const { x, y, width } = points[0];
     canvas.style.cursor = "none";
-    console.log(width);
     context.font = 31 + 1.5 * width + "px monospace";
     context.fillStyle = "black";
-    context.fillText("*", x - 8 - width / 2, y + 16 + width);
+    context.fillText(icon, x - 8 - width / 2, y + 16 + width);
   },
 });
 
 const lines: Displayable[] = [];
 const redoLines: Displayable[] = [];
+const placedIcons: Icon[] = [];
+const redoIcons: Icon[] = [];
+const undoOrder: string[] = [];
+const redoOrder: string[] = [];
 
 const cursor = { active: false, x: 0, y: 0 };
 
@@ -123,12 +148,18 @@ canvas.addEventListener("mouseout", () => {
 });
 
 canvas.addEventListener("mousedown", (e) => {
-  currentPointer = null;
-  cursorCommand = null;
-  cursor.active = true;
-  currentLine = [{ x: e.offsetX, y: e.offsetY, width: ctx.lineWidth }];
-  lines.push(createLine(currentLine));
-  canvas.dispatchEvent(event);
+  if (icon !== "*") {
+    placedIcons.push({ x: e.offsetX - 8, y: e.offsetY + 16, emoji: icon });
+    ctx.fillText(icon, e.offsetX - 8, e.offsetY + 16);
+    undoOrder.push("emoji");
+  } else {
+    cursor.active = true;
+    currentLine = [{ x: e.offsetX, y: e.offsetY, width: ctx.lineWidth }];
+    lines.push(createLine(currentLine));
+    canvas.dispatchEvent(event);
+    undoOrder.push("line");
+  }
+  icon = "*";
 });
 
 canvas.addEventListener("mousemove", (e) => {
@@ -167,21 +198,35 @@ function redraw() {
   for (const line of lines) {
     line.display(ctx);
   }
+  for (const icon of placedIcons) {
+    console.log("trying!");
+    ctx.font = "31px monospace";
+    ctx.fillText(icon.emoji, icon.x, icon.y);
+  }
   ctx.lineWidth = temp;
 }
 
 undoButton.addEventListener("click", () => {
-  if (lines.length > 0) {
+  if (undoOrder[undoOrder.length - 1] === "emoji") {
+    redoIcons.push(placedIcons.pop()!);
+    redoOrder.push(undoOrder.pop()!);
+  } else if (undoOrder[undoOrder.length - 1] === "line") {
     redoLines.push(lines.pop()!);
-    canvas.dispatchEvent(event);
+    redoOrder.push(undoOrder.pop()!);
   }
+  canvas.dispatchEvent(event);
+  console.log(redoOrder);
 });
 
 redoButton.addEventListener("click", () => {
-  if (redoLines.length > 0) {
+  if (redoOrder[redoOrder.length - 1] === "emoji") {
+    placedIcons.push(redoIcons.pop()!);
+    undoOrder.push(redoOrder.pop()!);
+  } else if (redoOrder[redoOrder.length - 1] === "line") {
     lines.push(redoLines.pop()!);
-    canvas.dispatchEvent(event);
+    undoOrder.push(redoOrder.pop()!);
   }
+  canvas.dispatchEvent(event);
 });
 
 thinButton.addEventListener("click", () => {
@@ -194,4 +239,19 @@ thickButton.addEventListener("click", () => {
   if (ctx.lineWidth < 10) {
     ctx.lineWidth += 1;
   }
+});
+
+pumpkinSticker.addEventListener("click", () => {
+  icon = pumpkinSticker.innerHTML;
+  canvas.dispatchEvent(toolEvent);
+});
+
+skullSticker.addEventListener("click", () => {
+  icon = skullSticker.innerHTML;
+  canvas.dispatchEvent(toolEvent);
+});
+
+ghostSticker.addEventListener("click", () => {
+  icon = ghostSticker.innerHTML;
+  canvas.dispatchEvent(toolEvent);
 });
