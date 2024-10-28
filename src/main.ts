@@ -47,15 +47,6 @@ thinButton.innerHTML = "thin lines";
 const thickButton = document.createElement("button");
 thickButton.innerHTML = "thick lines";
 
-const pumpkinSticker = document.createElement("button");
-pumpkinSticker.innerHTML = "🎃";
-
-const skullSticker = document.createElement("button");
-skullSticker.innerHTML = "💀";
-
-const ghostSticker = document.createElement("button");
-ghostSticker.innerHTML = "👻";
-
 sketchpad.append(canvas);
 sketchpad.style.position = "absolute";
 sketchpad.style.top = "10%";
@@ -65,10 +56,37 @@ sketchpad.style.transform = "translate(-50%, 50%)";
 thick.append(
   thinButton,
   thickButton,
-  pumpkinSticker,
-  skullSticker,
-  ghostSticker,
 );
+
+const addSticker = document.createElement("button");
+addSticker.innerHTML = "Add sticker";
+thick.append(addSticker);
+
+function createButton(sticker: string) {
+  const button = document.createElement("button");
+  button.innerHTML = sticker;
+
+  button.addEventListener("click", () => {
+    icon = button.innerHTML;
+    canvas.dispatchEvent(toolEvent);
+  });
+
+  addSticker.parentNode?.insertBefore(button, addSticker);
+}
+
+const stickers: string[] = ["🎃", "💀", "👻"];
+
+for (let i = 0; i < stickers.length; i++) {
+  createButton(stickers[i]);
+}
+
+addSticker.addEventListener("click", () => {
+  const text = prompt("Add emoji below", "👻");
+  if (text && !stickers.find((e) => e === text)) {
+    createButton(text);
+  }
+});
+
 thick.style.position = "absolute";
 thick.style.top = "55%";
 thick.style.left = "50%";
@@ -87,6 +105,11 @@ interface Displayable {
 }
 
 type Point = { x: number; y: number; width: number };
+
+// Icon and its uses inspired by Brace when prompted with my code from
+// step 7 with the question:
+// "What's a good way for me to track placed icons to use
+//  the redraw method on later?"
 type Icon = { x: number; y: number; emoji: string };
 
 const createLine = (points: Point[]): Displayable => ({
@@ -239,19 +262,4 @@ thickButton.addEventListener("click", () => {
   if (ctx.lineWidth < 10) {
     ctx.lineWidth += 1;
   }
-});
-
-pumpkinSticker.addEventListener("click", () => {
-  icon = pumpkinSticker.innerHTML;
-  canvas.dispatchEvent(toolEvent);
-});
-
-skullSticker.addEventListener("click", () => {
-  icon = skullSticker.innerHTML;
-  canvas.dispatchEvent(toolEvent);
-});
-
-ghostSticker.addEventListener("click", () => {
-  icon = ghostSticker.innerHTML;
-  canvas.dispatchEvent(toolEvent);
 });
