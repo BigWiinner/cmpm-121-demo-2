@@ -123,7 +123,6 @@ function createRange(value: string) {
       b = Number(slider.value);
     }
     ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
-    console.log(ctx.strokeStyle);
   });
   colorSliders.append(slider);
 }
@@ -170,7 +169,6 @@ const createLine = (points: Point[]): Displayable => ({
     context.beginPath();
     const { x, y, width, color } = points[0];
     ctx.strokeStyle = color;
-    console.log("Color = " + color);
     context.lineWidth = width * multiple;
     context.moveTo(x * multiple, y * multiple);
     for (const { x, y } of points) {
@@ -230,11 +228,8 @@ canvas.addEventListener("mouseenter", (e) => {
     width: ctx.lineWidth,
     color: ctx.strokeStyle,
   }];
-  console.log("Mouseenter: " + ctx.strokeStyle);
   cursorCommand = createPointer(currentPointer);
-  console.log("Mouseenter END: " + ctx.strokeStyle);
   canvas.dispatchEvent(toolEvent);
-  console.log("REDRAW END: " + ctx.strokeStyle);
 });
 
 canvas.addEventListener("mouseout", () => {
@@ -338,7 +333,6 @@ undoButton.addEventListener("click", () => {
     redoOrder.push(undoOrder.pop()!);
   }
   canvas.dispatchEvent(event);
-  console.log(redoOrder);
 });
 
 redoButton.addEventListener("click", () => {
@@ -377,6 +371,7 @@ exportButton.addEventListener("click", () => {
 
   multiple = 4;
   for (const line of lines) {
+    tempCtx.strokeStyle = ctx.strokeStyle;
     line.display(tempCtx);
   }
   multiple = 1;
