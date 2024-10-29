@@ -78,7 +78,7 @@ function createButton(sticker: string) {
   addSticker.parentNode?.insertBefore(button, addSticker);
 }
 
-const stickers: string[] = ["🎃", "💀", "👻"];
+const stickers: string[] = ["🎃", "💀", "👻", "🦇", "🧟", "🧛"];
 
 for (let i = 0; i < stickers.length; i++) {
   createButton(stickers[i]);
@@ -92,13 +92,13 @@ addSticker.addEventListener("click", () => {
 });
 
 thick.style.position = "absolute";
-thick.style.top = "55%";
+thick.style.top = "57.5%";
 thick.style.left = "50%";
 thick.style.transform = "translate(-50%, 50%)";
 
 pair.append(clearButton, undoButton, redoButton);
 pair.style.position = "absolute";
-pair.style.top = "60.5%";
+pair.style.top = "55%";
 pair.style.left = "50%";
 pair.style.transform = "translate(-50%, 50%)";
 
@@ -114,7 +114,7 @@ type Point = { x: number; y: number; width: number };
 // step 7 with the question:
 // "What's a good way for me to track placed icons to use
 //  the redraw method on later?"
-type Icon = { x: number; y: number; emoji: string };
+type Icon = { x: number; y: number; emoji: string; width: number };
 
 let multiple = 1;
 
@@ -178,7 +178,12 @@ canvas.addEventListener("mouseout", () => {
 
 canvas.addEventListener("mousedown", (e) => {
   if (icon !== "*") {
-    placedIcons.push({ x: e.offsetX - 8, y: e.offsetY + 16, emoji: icon });
+    placedIcons.push({
+      x: e.offsetX - 8,
+      y: e.offsetY + 16,
+      emoji: icon,
+      width: ctx.lineWidth,
+    });
     ctx.fillText(icon, e.offsetX - 8, e.offsetY + 16);
     undoOrder.push("emoji");
   } else {
@@ -228,7 +233,7 @@ function redraw() {
     line.display(ctx);
   }
   for (const icon of placedIcons) {
-    ctx.font = "31px monospace";
+    ctx.font = icon.width + 31 + "px monospace";
     ctx.fillText(icon.emoji, icon.x, icon.y);
   }
   ctx.lineWidth = temp;
@@ -287,7 +292,7 @@ exportButton.addEventListener("click", () => {
   multiple = 1;
 
   for (const icon of placedIcons) {
-    tempCtx.font = "124px monospace";
+    tempCtx.font = (icon.width + 31) * 4 + "px monospace";
     tempCtx.fillText(icon.emoji, icon.x * 4, icon.y * 4);
   }
 
