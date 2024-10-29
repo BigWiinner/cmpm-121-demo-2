@@ -62,6 +62,10 @@ const addSticker = document.createElement("button");
 addSticker.innerHTML = "Add sticker";
 thick.append(addSticker);
 
+const exportButton = document.createElement("button");
+exportButton.innerHTML = "export";
+thick.append(exportButton);
+
 function createButton(sticker: string) {
   const button = document.createElement("button");
   button.innerHTML = sticker;
@@ -112,14 +116,16 @@ type Point = { x: number; y: number; width: number };
 //  the redraw method on later?"
 type Icon = { x: number; y: number; emoji: string };
 
+let multiple = 1;
+
 const createLine = (points: Point[]): Displayable => ({
   display: (context: CanvasRenderingContext2D) => {
     context.beginPath();
     const { x, y, width } = points[0];
-    ctx.lineWidth = width;
-    context.moveTo(x, y);
+    context.lineWidth = width * multiple;
+    context.moveTo(x * multiple, y * multiple);
     for (const { x, y } of points) {
-      context.lineTo(x, y);
+      context.lineTo(x * multiple, y * multiple);
     }
     context.stroke();
   },
@@ -222,7 +228,6 @@ function redraw() {
     line.display(ctx);
   }
   for (const icon of placedIcons) {
-    console.log("trying!");
     ctx.font = "31px monospace";
     ctx.fillText(icon.emoji, icon.x, icon.y);
   }
@@ -262,4 +267,36 @@ thickButton.addEventListener("click", () => {
   if (ctx.lineWidth < 10) {
     ctx.lineWidth += 1;
   }
+});
+
+exportButton.addEventListener("click", () => {
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = 1024;
+  tempCanvas.height = 1024;
+  const tempCtx = tempCanvas.getContext("2d")!;
+  tempCtx.fillStyle = "orange";
+  tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+  ctx.save();
+  ctx.scale(4, 4);
+
+  multiple = 4;
+  for (const line of lines) {
+    line.display(tempCtx);
+  }
+  multiple = 1;
+
+  for (const icon of placedIcons) {
+    tempCtx.font = "124px monospace";
+    tempCtx.fillText(icon.emoji, icon.x * 4, icon.y * 4);
+  }
+
+  const anchor = document.createElement("a");
+  anchor.href = tempCanvas.toDataURL("image/png");
+  anchor.download = "sketchpad.png";
+  anchor.click();
+
+  tempCanvas.remove();
+
+  ctx.restore();
 });
