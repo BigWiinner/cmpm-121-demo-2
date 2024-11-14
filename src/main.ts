@@ -93,37 +93,30 @@ addSticker.addEventListener("click", () => {
 
 pair.append(clearButton, undoButton, redoButton);
 
-let r = 0;
-let g = 0;
-let b = 0;
-function createRange(value: string) {
+function createColorSlider() {
   const slider = document.createElement("input");
+  slider.setAttribute("title", "adjust pen color");
+
+  // slider settings
   slider.type = "range";
-  slider.name = value;
-  slider.setAttribute("title", value);
   slider.min = "0";
-  slider.max = "255";
+  slider.max = "360";
   slider.value = "0";
-  slider.addEventListener("input", () => {
-    if (slider.name === "red") {
-      r = Number(slider.value);
-    } else if (value === "green") {
-      g = Number(slider.value);
-    } else if (value === "blue") {
-      b = Number(slider.value);
-    }
-    ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
+
+  // set stroke color from slider input
+  slider.addEventListener("input", (event) => {
+    const target = event.target as HTMLInputElement;
+    const color = parseInt(target.value);
+
+    ctx.strokeStyle = `hsl(${color}, 100%, 50%)`;
   });
+
   colorSliders.append(slider);
 }
 
-const colors: string[] = ["red", "green", "blue"];
-for (let i = 0; i < colors.length; i++) {
-  createRange(colors[i]);
-}
+createColorSlider();
 
-// interface Displayable and createLine were given by Brace
-// when asked what the prompt in step 5 of D2 meant
+// interface Displayable and createLine were given by Brace when asked what the prompt in step 5 of D2 meant
 interface Displayable {
   display(context: CanvasRenderingContext2D): void;
 }
@@ -135,10 +128,8 @@ type Point = {
   color: string | CanvasGradient | CanvasPattern;
 };
 
-// Icon and its uses inspired by Brace when prompted with my code from
-// step 7 with the question:
-// "What's a good way for me to track placed icons to use
-//  the redraw method on later?"
+// Icon and its uses inspired by Brace when prompted with my code from step 7 with the question:
+// "What's a good way for me to track placed icons to use the redraw method on later?"
 type Icon = {
   x: number;
   y: number;
@@ -313,6 +304,8 @@ function redraw() {
   ctx.lineWidth = tempWidth;
   ctx.strokeStyle = tempColor;
 }
+
+// Button event listeners
 
 undoButton.addEventListener("click", () => {
   if (undoOrder[undoOrder.length - 1] === "emoji") {
