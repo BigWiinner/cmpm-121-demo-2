@@ -69,6 +69,41 @@ canvas {
   color: #888;
 }
 
+.title {
+  position: fixed;
+  top: -1%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+
+#sketchpad {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+
+#pair {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+
+#slider {
+  position: absolute;
+  top: 61%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+
+#thick {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;

@@ -8,11 +8,8 @@ const pair = document.querySelector<HTMLDivElement>("#pair")!;
 const colorSliders = document.querySelector<HTMLDivElement>("#slider")!;
 
 const title = document.createElement("h1");
-title.innerHTML = APP_NAME;
-title.style.position = "fixed";
-title.style.top = "-1%";
-title.style.left = "50%";
-title.style.transform = "translate(-50%, 50%)";
+title.classList.add("title");
+title.innerHTML = APP_NAME
 app.append(title);
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -49,15 +46,8 @@ const thickButton = document.createElement("button");
 thickButton.innerHTML = "thick lines";
 
 sketchpad.append(canvas);
-sketchpad.style.position = "absolute";
-sketchpad.style.top = "10%";
-sketchpad.style.left = "50%";
-sketchpad.style.transform = "translate(-50%, 50%)";
 
-thick.append(
-  thinButton,
-  thickButton,
-);
+thick.append(thinButton, thickButton);
 
 const addSticker = document.createElement("button");
 addSticker.innerHTML = "Add sticker";
@@ -92,16 +82,7 @@ addSticker.addEventListener("click", () => {
   }
 });
 
-thick.style.position = "absolute";
-thick.style.top = "62%";
-thick.style.left = "50%";
-thick.style.transform = "translate(-50%, 50%)";
-
 pair.append(clearButton, undoButton, redoButton);
-pair.style.position = "absolute";
-pair.style.top = "55%";
-pair.style.left = "50%";
-pair.style.transform = "translate(-50%, 50%)";
 
 let r = 0;
 let g = 0;
@@ -131,11 +112,6 @@ const colors: string[] = ["red", "green", "blue"];
 for (let i = 0; i < colors.length; i++) {
   createRange(colors[i]);
 }
-
-colorSliders.style.position = "absolute";
-colorSliders.style.top = "61%";
-colorSliders.style.left = "50%";
-colorSliders.style.transform = "translate(-50%, 50%)";
 
 // interface Displayable and createLine were given by Brace
 // when asked what the prompt in step 5 of D2 meant
@@ -206,28 +182,34 @@ const toolEvent = new Event("tool-moved");
 
 canvas.addEventListener("tool-moved", redraw);
 
-let currentLine: {
-  x: number;
-  y: number;
-  width: number;
-  color: string | CanvasGradient | CanvasPattern;
-}[] | null = null;
+let currentLine:
+  | {
+      x: number;
+      y: number;
+      width: number;
+      color: string | CanvasGradient | CanvasPattern;
+    }[]
+  | null = null;
 
 let cursorCommand: Displayable | null = null;
-let currentPointer: {
-  x: number;
-  y: number;
-  width: number;
-  color: string | CanvasGradient | CanvasPattern;
-}[] | null = null;
+let currentPointer:
+  | {
+      x: number;
+      y: number;
+      width: number;
+      color: string | CanvasGradient | CanvasPattern;
+    }[]
+  | null = null;
 
 canvas.addEventListener("mouseenter", (e) => {
-  currentPointer = [{
-    x: e.offsetX,
-    y: e.offsetY,
-    width: ctx.lineWidth,
-    color: ctx.strokeStyle,
-  }];
+  currentPointer = [
+    {
+      x: e.offsetX,
+      y: e.offsetY,
+      width: ctx.lineWidth,
+      color: ctx.strokeStyle,
+    },
+  ];
   cursorCommand = createPointer(currentPointer);
   canvas.dispatchEvent(toolEvent);
 });
@@ -251,12 +233,14 @@ canvas.addEventListener("mousedown", (e) => {
     undoOrder.push("emoji");
   } else {
     cursor.active = true;
-    currentLine = [{
-      x: e.offsetX,
-      y: e.offsetY,
-      width: ctx.lineWidth,
-      color: ctx.strokeStyle,
-    }];
+    currentLine = [
+      {
+        x: e.offsetX,
+        y: e.offsetY,
+        width: ctx.lineWidth,
+        color: ctx.strokeStyle,
+      },
+    ];
     lines.push(createLine(currentLine));
     canvas.dispatchEvent(event);
     undoOrder.push("line");
@@ -265,12 +249,14 @@ canvas.addEventListener("mousedown", (e) => {
 });
 
 canvas.addEventListener("mousemove", (e) => {
-  currentPointer = [{
-    x: e.offsetX,
-    y: e.offsetY,
-    width: ctx.lineWidth,
-    color: ctx.strokeStyle,
-  }];
+  currentPointer = [
+    {
+      x: e.offsetX,
+      y: e.offsetY,
+      width: ctx.lineWidth,
+      color: ctx.strokeStyle,
+    },
+  ];
   cursorCommand = createPointer(currentPointer);
   canvas.dispatchEvent(toolEvent);
   if (cursor.active && currentLine) {
@@ -292,12 +278,14 @@ canvas.addEventListener("mousemove", (e) => {
 });
 
 canvas.addEventListener("mouseup", (e) => {
-  currentPointer = [{
-    x: e.offsetX,
-    y: e.offsetY,
-    width: ctx.lineWidth,
-    color: ctx.strokeStyle,
-  }];
+  currentPointer = [
+    {
+      x: e.offsetX,
+      y: e.offsetY,
+      width: ctx.lineWidth,
+      color: ctx.strokeStyle,
+    },
+  ];
   cursorCommand = createPointer(currentPointer);
   cursor.active = false;
   currentLine = null;
