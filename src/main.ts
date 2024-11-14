@@ -2,6 +2,14 @@ import "./style.css";
 
 const APP_NAME = "My Spooky Sketchpad!";
 const app = document.querySelector<HTMLDivElement>("#app")!;
+
+let lines: Displayable[] = [];
+let redoLines: Displayable[] = [];
+let placedIcons: Icon[] = [];
+let redoIcons: Icon[] = [];
+let undoOrder: string[] = [];
+let redoOrder: string[] = [];
+
 const sketchpad = document.querySelector<HTMLCanvasElement>("#sketchpad")!;
 const thick = document.querySelector<HTMLDivElement>("#thick")!;
 const pair = document.querySelector<HTMLDivElement>("#pair")!;
@@ -9,7 +17,7 @@ const colorSliders = document.querySelector<HTMLDivElement>("#slider")!;
 
 const title = document.createElement("h1");
 title.classList.add("title");
-title.innerHTML = APP_NAME
+title.innerHTML = APP_NAME;
 app.append(title);
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -20,46 +28,47 @@ const ctx = canvas.getContext("2d")!;
 ctx.fillStyle = "orange";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-const clearButton = document.createElement("button");
-clearButton.innerHTML = "clear";
+const clearButton = createButton("clear");
 
 clearButton.addEventListener("click", () => {
-  lines.splice(0, lines.length);
-  placedIcons.splice(0, placedIcons.length);
-  redoLines.splice(0, redoLines.length);
-  redoIcons.splice(0, redoIcons.length);
-  undoOrder.splice(0, undoOrder.length);
-  redoOrder.splice(0, redoOrder.length);
+  resetCanvasData();
   redraw();
 });
 
-const undoButton = document.createElement("button");
-undoButton.innerHTML = "undo";
+function resetCanvasData(): void {
+  lines = [];
+  placedIcons = [];
+  redoLines = [];
+  redoIcons = [];
+  undoOrder = [];
+  redoOrder = [];
+}
 
-const redoButton = document.createElement("button");
-redoButton.innerHTML = "redo";
+// Tool selection buttons
+const undoButton = createButton("undo");
+const redoButton = createButton("redo");
+const thinButton = createButton("thin lines");
+const thickButton = createButton("thick lines");
 
-const thinButton = document.createElement("button");
-thinButton.innerHTML = "thin lines";
+function createButton(text: string): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.innerHTML = text;
 
-const thickButton = document.createElement("button");
-thickButton.innerHTML = "thick lines";
+  return button;
+}
 
 sketchpad.append(canvas);
 
 thick.append(thinButton, thickButton);
 
-const addSticker = document.createElement("button");
-addSticker.innerHTML = "Add sticker";
+const addSticker = createButton("Add sticker");
 thick.append(addSticker);
 
-const exportButton = document.createElement("button");
-exportButton.innerHTML = "export";
+const exportButton = createButton("export");
 thick.append(exportButton);
 
-function createButton(sticker: string) {
-  const button = document.createElement("button");
-  button.innerHTML = sticker;
+function createStickerButton(sticker: string) {
+  const button = createButton(sticker);
 
   button.addEventListener("click", () => {
     icon = button.innerHTML;
@@ -72,13 +81,13 @@ function createButton(sticker: string) {
 const stickers: string[] = ["🎃", "💀", "👻", "🦇", "🧟", "🧛"];
 
 for (let i = 0; i < stickers.length; i++) {
-  createButton(stickers[i]);
+  createStickerButton(stickers[i]);
 }
 
 addSticker.addEventListener("click", () => {
   const text = prompt("Add emoji below", "👻");
   if (text && !stickers.find((e) => e === text)) {
-    createButton(text);
+    createStickerButton(text);
   }
 });
 
@@ -164,13 +173,6 @@ const createPointer = (points: Point[]): Displayable => ({
     context.fillText(icon, x - 8 - width / 2, y + 16 + width);
   },
 });
-
-const lines: Displayable[] = [];
-const redoLines: Displayable[] = [];
-const placedIcons: Icon[] = [];
-const redoIcons: Icon[] = [];
-const undoOrder: string[] = [];
-const redoOrder: string[] = [];
 
 const cursor = { active: false, x: 0, y: 0 };
 
